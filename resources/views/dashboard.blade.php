@@ -336,6 +336,171 @@
         .custom-pagination .disabled {
             color: #ccc;
         }
+
+        /* Tabs */
+        .tabs-container {
+            margin-bottom: 25px;
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 5px;
+            background: white;
+            padding: 5px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Logs */
+        .log-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-right: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .log-item:hover {
+            background: #f0f0f0;
+        }
+
+        .log-item.log-error {
+            border-right-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .log-item.log-warning {
+            border-right-color: #ffc107;
+            background: #fffdf5;
+        }
+
+        .log-item.log-info {
+            border-right-color: #17a2b8;
+            background: #f5fbff;
+        }
+
+        .log-item.log-debug {
+            border-right-color: #6c757d;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .log-level {
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .level-error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .level-warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .level-info {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .level-debug {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
+
+        .log-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .log-message {
+            font-size: 14px;
+            color: #333;
+            word-break: break-word;
+            line-height: 1.5;
+        }
+
+        .log-message pre {
+            margin: 10px 0 0 0;
+            padding: 10px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 5px;
+            font-size: 12px;
+            overflow-x: auto;
+            max-height: 200px;
+        }
+
+        .logs-empty {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+        }
+
+        .logs-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .tab-badge {
+            background: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .tab-btn.active .tab-badge {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .tab-btn:not(.active) .tab-badge {
+            background: #e0e0e0;
+        }
     </style>
 </head>
 <body>
@@ -392,7 +557,24 @@
         </div>
     </div>
 
-    {{-- Posts Table --}}
+    {{-- Tabs --}}
+    @if($user->isAdmin())
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('posts')">
+                    📚 المقالات
+                    <span class="tab-badge">{{ $posts->total() }}</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('logs')">
+                    📋 سجل النشاط
+                    <span class="tab-badge">{{ count($logs) }}</span>
+                </button>
+            </div>
+        </div>
+    @endif
+
+    {{-- Tab: Posts --}}
+    <div id="tab-posts" class="tab-content active">
     <div class="main-card">
         <div class="card-header">
             <h2>📚 مقالاتي</h2>
@@ -486,7 +668,89 @@
             </div>
         @endif
     </div>
+    </div>{{-- End tab-posts --}}
+
+    {{-- Tab: Logs (للأدمن فقط) --}}
+    @if($user->isAdmin())
+        <div id="tab-logs" class="tab-content">
+            <div class="main-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);">
+                    <h2>📋 سجل النشاط</h2>
+                    <span style="background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 13px;">
+                        آخر {{ count($logs) }} سجل
+                    </span>
+                </div>
+                
+                <div class="card-body">
+                    @if(count($logs) > 0)
+                        <div class="logs-list">
+                            @foreach($logs as $log)
+                                @php
+                                    $levelClass = match(strtolower($log['level'])) {
+                                        'error' => 'log-error',
+                                        'warning' => 'log-warning',
+                                        'info' => 'log-info',
+                                        'debug' => 'log-debug',
+                                        default => ''
+                                    };
+                                    $badgeClass = match(strtolower($log['level'])) {
+                                        'error' => 'level-error',
+                                        'warning' => 'level-warning',
+                                        'info' => 'level-info',
+                                        'debug' => 'level-debug',
+                                        default => ''
+                                    };
+                                    // فصل الرسالة عن التفاصيل
+                                    $parts = explode("\n", $log['message'], 2);
+                                    $mainMessage = $parts[0];
+                                    $details = $parts[1] ?? null;
+                                @endphp
+                                <div class="log-item {{ $levelClass }}">
+                                    <div class="log-header">
+                                        <span class="log-level {{ $badgeClass }}">{{ $log['level'] }}</span>
+                                        <span class="log-time">🕐 {{ $log['timestamp'] }}</span>
+                                    </div>
+                                    <div class="log-message">
+                                        {{ $mainMessage }}
+                                        @if($details)
+                                            <pre>{{ Str::limit($details, 500) }}</pre>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="logs-empty">
+                            <div style="font-size: 50px; margin-bottom: 15px;">📭</div>
+                            <h3>لا توجد سجلات</h3>
+                            <p>سجل النشاط فارغ حالياً</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
+
+<script>
+function switchTab(tabName) {
+    // إخفاء كل المحتوى
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // إزالة active من كل الأزرار
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // إظهار التبويب المحدد
+    document.getElementById('tab-' + tabName).classList.add('active');
+    
+    // تفعيل الزر
+    event.target.closest('.tab-btn').classList.add('active');
+}
+</script>
 
 </body>
 </html>

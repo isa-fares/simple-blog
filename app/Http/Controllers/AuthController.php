@@ -144,7 +144,60 @@ class AuthController extends Controller
             ? Post::with('user')->latest()->paginate(15)
             : Post::where('user_id', $userId)->latest()->paginate(15);
 
-        return view('dashboard', compact('user', 'posts'));
+        // قراءة آخر سجلات النشاط (للأدمن فقط)
+        $logs = [];
+        if ($user->isAdmin()) {
+            $logs = $this->getRecentLogs(50);
+        }
+
+        return view('dashboard', compact('user', 'posts', 'logs'));
+    }
+
+    /**
+     * قراءة آخر سجلات النشاط من ملف الـ log
+     */
+    private function getRecentLogs(int $limit = 50): array
+    {
+        $logFile = storage_path('logs/laravel.log');
+        
+        if (!file_exists($logFile)) {
+            return [];
+        }
+
+        $logs = [];
+        $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $lines = array_reverse($lines); // الأحدث أولاً
+        
+        $currentLog = null;
+        $count = 0;
+
+        foreach ($lines as $line) {
+            // التعرف على بداية log جديد
+            if (preg_match('/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] \w+\.(\w+): (.*)$/', $line, $matches)) {
+                if ($currentLog && $count < $limit) {
+                    $logs[] = $currentLog;
+                    $count++;
+                }
+                
+                $currentLog = [
+                    'timestamp' => $matches[1],
+                    'level' => $matches[2],
+                    'message' => $matches[3],
+                ];
+                
+                if ($count >= $limit) break;
+            } elseif ($currentLog) {
+                // إضافة سطر للـ log الحالي (stack trace مثلاً)
+                $currentLog['message'] .= "\n" . $line;
+            }
+        }
+
+        // إضافة آخر log
+        if ($currentLog && $count < $limit) {
+            $logs[] = $currentLog;
+        }
+
+        return $logs;
     }
 
     /**
