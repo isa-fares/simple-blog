@@ -680,7 +680,7 @@
                         آخر {{ count($logs) }} سجل
                     </span>
                 </div>
-                
+
                 <div class="card-body">
                     @if(count($logs) > 0)
                         <div class="logs-list">
@@ -738,15 +738,15 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
-    
+
     // إزالة active من كل الأزرار
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    
+
     // إظهار التبويب المحدد
     document.getElementById('tab-' + tabName).classList.add('active');
-    
+
     // تفعيل الزر
     event.target.closest('.tab-btn').classList.add('active');
 }

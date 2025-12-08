@@ -159,7 +159,7 @@ class AuthController extends Controller
     private function getRecentLogs(int $limit = 50): array
     {
         $logFile = storage_path('logs/laravel.log');
-        
+
         if (!file_exists($logFile)) {
             return [];
         }
@@ -167,7 +167,7 @@ class AuthController extends Controller
         $logs = [];
         $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         $lines = array_reverse($lines); // الأحدث أولاً
-        
+
         $currentLog = null;
         $count = 0;
 
@@ -178,13 +178,13 @@ class AuthController extends Controller
                     $logs[] = $currentLog;
                     $count++;
                 }
-                
+
                 $currentLog = [
                     'timestamp' => $matches[1],
                     'level' => $matches[2],
                     'message' => $matches[3],
                 ];
-                
+
                 if ($count >= $limit) break;
             } elseif ($currentLog) {
                 // إضافة سطر للـ log الحالي (stack trace مثلاً)
