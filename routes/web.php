@@ -30,22 +30,24 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('dashboard' , [AuthController::class , 'dashboard'])->name('dashboard')->middleware('auth.session');
 
-// البحث في المقالات (متاح للجميع)
+// ==========================================
+// 🌐 المقالات العامة (بدون تسجيل دخول)
+// ==========================================
 Route::get('/search', [PostController::class, 'search'])->name('posts.search');
+Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
 
+// ==========================================
+// 🔐 يتطلب تسجيل دخول
+// ==========================================
 Route::middleware('auth.session')->group(function () {
 
+    // إدارة المقالات
     Route::get('/posts/create', [PostController::class, 'create'])
         ->name('posts.create');
 
     Route::post('/posts', [PostController::class, 'store'])
         ->name('posts.store');
-
-    Route::get('/posts', [PostController::class, 'index'])
-        ->name('posts.index');
-
-    Route::get('/posts/{post}', [PostController::class, 'show'])
-        ->name('posts.show');
 
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])
         ->name('posts.edit');
@@ -56,7 +58,7 @@ Route::middleware('auth.session')->group(function () {
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])
         ->name('posts.destroy');
 
-    // Comments Routes
+    // التعليقات
     Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
         ->name('comments.store');
 

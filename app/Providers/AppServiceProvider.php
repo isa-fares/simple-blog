@@ -5,8 +5,11 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use App\Events\PostCreated;
 use App\Listeners\LogPostCreated;
+use App\Models\Post;
+use App\Policies\PostPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,5 +33,8 @@ class AppServiceProvider extends ServiceProvider
             PostCreated::class,
             LogPostCreated::class
         );
+
+        // تسجيل الـ Policy للمقالات
+        Gate::policy(Post::class, PostPolicy::class);
     }
 }

@@ -6,11 +6,19 @@ use App\Models\Post;
 use App\Models\User;
 use App\Http\Requests\StorePostRequest;
 use App\Events\PostCreated;
+use App\Services\AuthorizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class PostController extends Controller
 {
+    protected AuthorizationService $auth;
+
+    public function __construct()
+    {
+        $this->auth = new AuthorizationService();
+    }
+
     /**
      * قائمة المقالات المنشورة (للزوار)
      */
@@ -58,13 +66,16 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        abort_unless($post->is_published, 404);
+        // التحقق من صلاحية العرض
+        if (!$this->auth->canPost('view', $post)) {
+            abort(403, 'غير مصرح لك بعرض هذا المقال');
+        }
 
         // تحميل التعليقات مع كتّابها والردود
         $post->load([
             'user',
-            'parentComments.user',      // التعليقات الرئيسية مع كتّابها
-            'parentComments.replies.user' // الردود مع كتّابها
+            'parentComments.user',
+            'parentComments.replies.user'
         ]);
 
         return view('posts.show', compact('post'));
@@ -75,6 +86,11 @@ class PostController extends Controller
      */
     public function create()
     {
+        // التحقق من صلاحية الإنشاء
+        if (!$this->auth->canPost('create')) {
+            abort(403, 'غير مصرح لك بإنشاء مقالات');
+        }
+
         return view('posts.create');
     }
 
@@ -83,6 +99,11 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
+        // التحقق من صلاحية الإنشاء
+        if (!$this->auth->canPost('create')) {
+            abort(403, 'غير مصرح لك بإنشاء مقالات');
+        }
+
         $post = Post::create([
             'user_id' => $this->getUserId($request),
             'title' => $request->validated()['title'],
@@ -90,7 +111,6 @@ class PostController extends Controller
             'is_published' => $request->boolean('is_published'),
         ]);
 
-        // إطلاق الحدث - الـ Listeners ستتولى الباقي!
         event(new PostCreated($post));
 
         return redirect()->route('dashboard')->with('success', 'تم إنشاء المقال بنجاح');
@@ -101,7 +121,10 @@ class PostController extends Controller
      */
     public function edit(Request $request, Post $post)
     {
-        $this->authorizePost($request, $post);
+        // التحقق من صلاحية التعديل
+        if (!$this->auth->canPost('update', $post)) {
+            abort(403, 'غير مصرح لك بتعديل هذا المقال');
+        }
 
         return view('posts.edit', compact('post'));
     }
@@ -111,7 +134,10 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        $this->authorizePost($request, $post);
+        // التحقق من صلاحية التعديل
+        if (!$this->auth->canPost('update', $post)) {
+            abort(403, 'غير مصرح لك بتعديل هذا المقال');
+        }
 
         $post->update([
             'title' => $request->input('title'),
@@ -127,23 +153,14 @@ class PostController extends Controller
      */
     public function destroy(Request $request, Post $post)
     {
-        $this->authorizePost($request, $post);
+        // التحقق من صلاحية الحذف
+        if (!$this->auth->canPost('delete', $post)) {
+            abort(403, 'غير مصرح لك بحذف هذا المقال');
+        }
 
         $post->delete();
 
         return redirect()->route('dashboard')->with('success', 'تم حذف المقال بنجاح');
-    }
-
-    /**
-     * التحقق من صلاحية الوصول للمقال
-     */
-    private function authorizePost(Request $request, Post $post): void
-    {
-        $user = $this->getUser($request);
-
-        if ($post->user_id !== $user->id && !$user->isAdmin()) {
-            abort(403, 'غير مصرح لك');
-        }
     }
 
     /**
