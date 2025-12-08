@@ -16,13 +16,11 @@ class PostController extends Controller
      */
     public function index()
     {
-        // Cache لمدة 5 دقائق (300 ثانية)
-        $posts = Cache::remember('posts_index', 300, function () {
-            return Post::with('user')
-                ->where('is_published', true)
-                ->latest()
-                ->get();
-        });
+        $posts = Post::with('user')
+            ->withCount('comments')
+            ->where('is_published', true)
+            ->latest()
+            ->paginate(12);
 
         return view('posts.index', compact('posts'));
     }
