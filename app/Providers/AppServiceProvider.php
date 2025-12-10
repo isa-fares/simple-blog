@@ -10,15 +10,17 @@ use App\Events\PostCreated;
 use App\Listeners\LogPostCreated;
 use App\Models\Post;
 use App\Policies\PostPolicy;
+use App\Repositories\UserRepositoryInterface;
+use App\Repositories\EloquentUserRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
      */
-    public function register(): void
+    public function register()
     {
-        //
+        $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);
     }
 
     /**
@@ -37,4 +39,5 @@ class AppServiceProvider extends ServiceProvider
         // تسجيل الـ Policy للمقالات
         Gate::policy(Post::class, PostPolicy::class);
     }
+
 }
