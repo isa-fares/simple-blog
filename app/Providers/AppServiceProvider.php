@@ -20,7 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);
+        $this->app->bind(
+         UserRepositoryInterface::class,
+         EloquentUserRepository::class);
     }
 
     /**
