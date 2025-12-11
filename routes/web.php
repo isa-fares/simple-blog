@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ProvisionServer;
+use App\Http\Controllers\PhotoController;
 
 // Route::get('/', [HomeController::class, 'index'])->name('index');
 // Route::get('/user', [UserController::class, 'index'])->name('user.index');
@@ -68,3 +70,13 @@ Route::middleware('auth.session')->group(function () {
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])
         ->name('comments.destroy');
 });
+
+
+
+
+// معالجة الطلب
+Route::post('/provision-server', ProvisionServer::class);
+
+Route::resources([
+    'photos' => PhotoController::class,
+]);

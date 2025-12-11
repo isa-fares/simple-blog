@@ -96,6 +96,21 @@
 - [x] Eager Loading
 - [x] Caching (تجربة)
 
+### 🔟 Testing
+- [x] Unit & Feature Tests (أساسيات)
+- [x] AAA Pattern (Arrange, Act, Assert)
+- [x] Assertions (assertStatus, assertSee)
+- [x] RefreshDatabase
+
+### 1️⃣1️⃣ API Development
+- [x] Repository Pattern (Interface + Implementation)
+- [x] Service Layer (Business Logic)
+- [x] API Resources (تنسيق البيانات)
+- [x] Form Requests (API Validation)
+- [x] API Controllers (Users CRUD)
+- [x] Dependency Injection
+- [ ] API Authentication (Sanctum) - **جاري العمل عليه**
+
 ---
 
 ## ❌ ما لم يتم تعلمه بعد
@@ -103,11 +118,11 @@
 ### 🔴 أساسيات مهمة (الأولوية القصوى)
 | # | الموضوع | الوصف |
 |---|---------|-------|
-| 1 | **Testing** | Unit Tests, Feature Tests, PHPUnit/Pest |
-| 2 | **API Development** | REST API, JSON Responses, Sanctum Tokens |
-| 3 | **File Upload** | رفع الصور، Storage، Validation |
-| 4 | **Queues & Jobs** | Background Tasks، Email Queue |
-| 5 | **Notifications** | Email، Database، Real-time |
+| 1 | **API Authentication (Sanctum)** | Token-based Auth, API Security | 
+| 2 | **File Upload** | رفع الصور، Storage، Validation |
+| 3 | **Queues & Jobs** | Background Tasks، Email Queue |
+| 4 | **Notifications** | Email، Database، Real-time |
+| 5 | **Advanced Testing** | Mocking, Database Testing |
 
 ### 🟡 متوسطة الأهمية
 | # | الموضوع | الوصف |
@@ -136,11 +151,16 @@ app/
 ├── Events/PostCreated.php
 ├── Http/
 │   ├── Controllers/
+│   │   ├── Api/UserController.php (API)
 │   │   ├── AuthController.php
 │   │   ├── PostController.php
 │   │   └── CommentController.php
 │   ├── Middleware/AuthSessionMiddleware.php
-│   └── Requests/StorePostRequest.php
+│   ├── Requests/
+│   │   ├── StoreUserRequest.php (API)
+│   │   ├── UpdateUserRequest.php (API)
+│   │   └── StorePostRequest.php
+│   └── Resources/UserResource.php (API)
 ├── Listeners/LogPostCreated.php
 ├── Models/
 │   ├── User.php
@@ -148,7 +168,12 @@ app/
 │   └── Comment.php
 ├── Policies/PostPolicy.php
 ├── Providers/AppServiceProvider.php
-└── Services/AuthorizationService.php
+├── Repositories/
+│   ├── UserRepositoryInterface.php
+│   └── EloquentUserRepository.php
+└── Services/
+    ├── AuthorizationService.php
+    └── UserService.php
 
 database/
 ├── factories/
@@ -202,9 +227,9 @@ POST /posts/{id}/comments → إضافة تعليق
 
 ---
 
-## 📝 ملاحظات مهمة
+## 🎯 الخطوة الحالية
 
-1. **Custom Auth**: نستخدم Session بدون Laravel Auth Guard
+**API Authentication (Sanctum)** - حماية الـ API بالـ Tokens
 2. **Policy Integration**: عبر AuthorizationService
 3. **Database**: SQLite
 4. **Session Driver**: Database
