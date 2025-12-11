@@ -14,10 +14,21 @@ use App\Http\Controllers\PhotoController;
 // Route::get('/user', [UserController::class, 'index'])->name('user.index');
 // Route::redirect('/here', '/there', 301);
 // Route::view('/there', 'there');
-Route::get('/', function () {
-    return "welcome to blade template";
-});
+class A
+{
+    public function __construct(B $b) {}
 
+}
+
+class B
+{
+    public function __construct(C $c) {}
+}
+
+class C {}
+Route::get('/', function (A $a) {
+    dd($a::class);
+});
 
 
 Route::get('/login' , [AuthController::class, 'showLoginForm'])->name('login');
