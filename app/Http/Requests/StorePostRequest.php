@@ -23,6 +23,8 @@ class StorePostRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'content' => ['required', 'string', 'min:10'],
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // أضف هذا
+
         ];
     }
 
@@ -37,6 +39,9 @@ class StorePostRequest extends FormRequest
             'title.max' => 'العنوان يجب ألا يتجاوز 255 حرف',
             'content.required' => 'المحتوى مطلوب',
             'content.min' => 'المحتوى يجب أن يكون 10 أحرف على الأقل',
+            'image.image' => 'الملف يجب أن يكون صورة',
+            'image.mimes' => 'الصورة يجب أن تكون من نوع: jpeg, png, jpg, gif',
+            'image.max' => 'حجم الصورة يجب أن لا يتجاوز 2 ميجابايت',
         ];
     }
 }

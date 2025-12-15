@@ -60,6 +60,14 @@
         ✍️ {{ $post->user->name ?? 'مجهول' }} |
         📅 {{ $post->created_at->format('Y-m-d') }}
     </div>
+    @if($post->image)
+        <div class="mb-4">
+            <img src="{{ asset('storage/' . $post->image) }}"
+                alt="{{ $post->title }}"
+                class="img-fluid rounded"
+                style="max-width: 100%; max-height: 400px; object-fit: cover;">
+        </div>
+    @endif
     <div class="post-content">
         {!! nl2br(e($post->content)) !!}
     </div>

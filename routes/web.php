@@ -91,3 +91,5 @@ Route::post('/provision-server', ProvisionServer::class);
 Route::resources([
     'photos' => PhotoController::class,
 ]);
+
+

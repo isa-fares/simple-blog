@@ -279,6 +279,29 @@
                         >
                         <label for="is_published">🌐 نشر المقال</label>
                     </div>
+                            </div>
+                <!-- أضف هذا الحقل -->
+                <div class="mb-3">
+                    <label for="image" class="form-label">صورة المقال</label>
+
+                    @if($post->image)
+                        <div class="mb-2">
+                            <img src="{{ asset('storage/' . $post->image) }}"
+                                alt="صورة المقال"
+                                style="max-width: 200px; border-radius: 8px;">
+                            <p class="text-muted small">الصورة الحالية</p>
+                        </div>
+                    @endif
+
+                    <input type="file"
+                        class="form-control @error('image') is-invalid @enderror"
+                        id="image"
+                        name="image"
+                        accept="image/*">
+                    <small class="text-muted">اترك فارغاً للإبقاء على الصورة الحالية</small>
+                    @error('image')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-actions">

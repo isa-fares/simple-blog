@@ -235,6 +235,18 @@
                         <label for="is_published">🌐 نشر المقال مباشرة</label>
                     </div>
                 </div>
+            <!-- أضف هذا الحقل قبل زر الإرسال -->
+                <div class="mb-3">
+                    <label for="image" class="form-label">صورة المقال (اختياري)</label>
+                    <input type="file"
+                        class="form-control @error('image') is-invalid @enderror"
+                        id="image"
+                        name="image"
+                        accept="image/*">
+                    @error('image')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">

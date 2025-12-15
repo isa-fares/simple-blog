@@ -12,6 +12,7 @@
 
 ### 1️⃣ **شو هو هذا المفهوم؟**
 - تعريف بسيط وواضح
+
 - ليش اخترعوه أو ليش موجود؟
 
 ### 2️⃣ **ليش مهم؟**
@@ -41,6 +42,30 @@
 - ❌ لا تفترض معرفة مسبقة
 
 **نحن هنا لصقل الفهم، وليس لتطوير موقع!**
+اشرح لي  كأني junior
+
+---
+
+## 🔄 قاعدة التأكد من الفهم (مهم جداً!)
+
+**قبل كتابة أي كود، اسأل المتعلم:**
+
+1. **أسئلة استكشافية** - خليه يفكر بالحل قبل ما تعطيه إياه
+2. **تأكد من الفهم** - اسأل "هل المفهوم واضح؟" قبل الانتقال للتطبيق
+3. **لا تنتقل للخطوة التالية** حتى يؤكد المتعلم فهمه
+
+### مثال على الطريقة الصحيحة:
+```
+❌ خطأ: "هذا الكود لرفع الصور" → وتكتب الكود مباشرة
+
+✅ صح:
+1. اشرح المفهوم
+2. اسأل: "شو بتتوقع نحتاج؟"
+3. ناقش إجابته
+4. تأكد من الفهم
+5. قل: "إذا واضح، قلي يلا نطبق"
+6. ثم اكتب الكود خطوة خطوة
+```
 
 ---
 
@@ -102,14 +127,17 @@
 - [x] Assertions (assertStatus, assertSee)
 - [x] RefreshDatabase
 
-### 1️⃣1️⃣ API Development
+### 1️⃣1️⃣ API Development ✅
 - [x] Repository Pattern (Interface + Implementation)
 - [x] Service Layer (Business Logic)
 - [x] API Resources (تنسيق البيانات)
 - [x] Form Requests (API Validation)
-- [x] API Controllers (Users CRUD)
+- [x] API Controllers (Users + Posts CRUD)
 - [x] Dependency Injection
-- [ ] API Authentication (Sanctum) - **جاري العمل عليه**
+- [x] API Authentication (Sanctum) ✅
+- [x] Token-based Authentication ✅
+- [x] Protected Routes (auth:sanctum) ✅
+- [x] API Authorization (Role-based) ✅
 
 ---
 
@@ -118,11 +146,11 @@
 ### 🔴 أساسيات مهمة (الأولوية القصوى)
 | # | الموضوع | الوصف |
 |---|---------|-------|
-| 1 | **API Authentication (Sanctum)** | Token-based Auth, API Security | 
-| 2 | **File Upload** | رفع الصور، Storage، Validation |
-| 3 | **Queues & Jobs** | Background Tasks، Email Queue |
-| 4 | **Notifications** | Email، Database، Real-time |
-| 5 | **Advanced Testing** | Mocking, Database Testing |
+| 1 | **File Upload** | رفع الصور، Storage، Validation |
+| 2 | **Queues & Jobs** | Background Tasks، Email Queue |
+| 3 | **Notifications** | Email، Database، Real-time |
+| 4 | **Advanced Testing** | Mocking, Database Testing, API Testing |
+| 5 | **Middleware** | Custom Middleware، Rate Limiting |
 
 ### 🟡 متوسطة الأهمية
 | # | الموضوع | الوصف |
@@ -151,7 +179,10 @@ app/
 ├── Events/PostCreated.php
 ├── Http/
 │   ├── Controllers/
-│   │   ├── Api/UserController.php (API)
+│   │   ├── Api/
+│   │   │   ├── AuthController.php (API Auth)
+│   │   │   ├── UserController.php (Users API)
+│   │   │   └── PostController.php (Posts API)
 │   │   ├── AuthController.php
 │   │   ├── PostController.php
 │   │   └── CommentController.php
@@ -160,10 +191,12 @@ app/
 │   │   ├── StoreUserRequest.php (API)
 │   │   ├── UpdateUserRequest.php (API)
 │   │   └── StorePostRequest.php
-│   └── Resources/UserResource.php (API)
+│   └── Resources/
+│       ├── UserResource.php (API)
+│       └── PostResource.php (API)
 ├── Listeners/LogPostCreated.php
 ├── Models/
-│   ├── User.php
+│   ├── User.php (+ HasApiTokens)
 │   ├── Post.php
 │   └── Comment.php
 ├── Policies/PostPolicy.php
@@ -199,14 +232,9 @@ resources/views/
 | الدور | الإيميل | كلمة المرور | الصلاحيات |
 |-------|---------|-------------|-----------|
 | Admin | admin@example.com | 123 | كل شيء |
-| Writer | writer@example.com | password | CRUD لمقالاته |
-| User | user@example.com | password | عرض فقط |
-
----
-
 ## 🔗 الـ Routes الرئيسية
 
-### 🌐 عام (بدون تسجيل)
+### 🌐 Web Routes (بدون تسجيل)
 ```
 GET  /posts          → قائمة المقالات
 GET  /posts/{id}     → عرض مقال
@@ -214,11 +242,37 @@ GET  /search         → البحث
 GET  /login          → صفحة الدخول
 ```
 
-### 🔐 يتطلب تسجيل دخول
+### 🔐 Web Routes (يتطلب تسجيل دخول)
 ```
 GET  /dashboard      → لوحة التحكم
 GET  /posts/create   → إنشاء مقال
 POST /posts          → حفظ مقال
+GET  /posts/{id}/edit → تعديل مقال
+PUT  /posts/{id}     → تحديث مقال
+DELETE /posts/{id}   → حذف مقال
+POST /posts/{id}/comments → إضافة تعليق
+```
+
+### 🌐 API Routes (Public)
+```
+## 📝 ملاحظات مهمة
+
+1. **Custom Auth**: نستخدم Session للـ Web بدون Laravel Auth Guard
+2. **API Auth**: نستخدم Sanctum للـ API مع Tokens
+3. **Policy Integration**: عبر AuthorizationService
+4. **Database**: SQLite
+5. **Session Driver**: Database
+6. **Cache Driver**: File
+7. **API Design**: RESTful مع Repository + Service Pattern
+
+---
+
+## 🎯 الخطوة التالية المقترحة
+
+**File Upload** - رفع الصور للمقالات (Laravel Storage)
+GET    /api/users         → كل المستخدمين
+POST   /api/users         → إنشاء مستخدم
+```T /posts          → حفظ مقال
 GET  /posts/{id}/edit → تعديل مقال
 PUT  /posts/{id}     → تحديث مقال
 DELETE /posts/{id}   → حذف مقال

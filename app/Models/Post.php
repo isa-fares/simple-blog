@@ -15,6 +15,7 @@ class Post extends Model
         'user_id',
         'title',
         'content',
+        'image',
         'is_published',
     ];
 

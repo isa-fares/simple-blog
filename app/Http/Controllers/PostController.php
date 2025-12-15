@@ -9,6 +9,7 @@ use App\Events\PostCreated;
 use App\Services\AuthorizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -104,11 +105,17 @@ class PostController extends Controller
             abort(403, 'غير مصرح لك بإنشاء مقالات');
         }
 
+        // رفع الصورة إذا وُجدت
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('posts', 'public');
+        }
+
         $post = Post::create([
             'user_id' => $this->getUserId($request),
             'title' => $request->validated()['title'],
             'content' => $request->validated()['content'],
             'is_published' => $request->boolean('is_published'),
+            'image' => $data['image'] ?? null,
         ]);
 
         event(new PostCreated($post));
@@ -138,11 +145,19 @@ class PostController extends Controller
         if (!$this->auth->canPost('update', $post)) {
             abort(403, 'غير مصرح لك بتعديل هذا المقال');
         }
+        if ($request->hasFile('image')) {
+            // حذف الصورة القديمة إذا وُجدت
+            if ($post->image) {
+                Storage::disk('public')->delete($post->image);
+            }
+            $data['image'] = $request->file('image')->store('posts', 'public');
+        }
 
         $post->update([
             'title' => $request->input('title'),
             'content' => $request->input('content'),
             'is_published' => $request->boolean('is_published'),
+            'image' => $data['image'] ?? $post->image,
         ]);
 
         return redirect()->route('dashboard')->with('success', 'تم تحديث المقال بنجاح');
