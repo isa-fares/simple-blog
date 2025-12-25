@@ -28,15 +28,13 @@ class PostController extends Controller
         $posts = Post::with('user')
             ->withCount('comments')
             ->where('is_published', true)
-            ->latest()
+            ->latest() 
             ->paginate(12);
 
         return view('posts.index', compact('posts'));
     }
 
-    /**
-     * البحث في المقالات
-     */
+
     public function search(Request $request)
     {
         $query = $request->input('q');
@@ -49,12 +47,19 @@ class PostController extends Controller
             ]);
         }
 
-        // البحث في العنوان والمحتوى
+        // استخدام when() للبحث + فلترة اختيارية حسب الكاتب
         $posts = Post::with('user')
             ->where('is_published', true)
-            ->where(function ($q) use ($query) {
-                $q->where('title', 'LIKE', "%{$query}%")
-                  ->orWhere('content', 'LIKE', "%{$query}%");
+            // ✅ استخدام when() للبحث - ينفذ فقط إذا $query موجود
+            ->when($query, function ($q) use ($query) {
+                $q->where(function ($subQuery) use ($query) {
+                    $subQuery->where('title', 'LIKE', "%{$query}%")
+                        ->orWhere('content', 'LIKE', "%{$query}%");
+                });
+            })
+            // ✅ فلترة اختيارية حسب الكاتب (مثال إضافي)
+            ->when($request->has('author_id'), function ($q) use ($request) {
+                $q->where('user_id', $request->author_id);
             })
             ->latest()
             ->paginate(10);
